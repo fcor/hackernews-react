@@ -7,8 +7,6 @@ const path_base = 'https://hn.algolia.com/api/v1';
 const path_search = '/search';
 const param_search = 'query=';
 
-const isSearched = (searchTerm) => (item) =>
-  !searchTerm || item.title.toLowerCase().includes(searchTerm.toLowerCase());
 
 class App extends Component {
   constructor(props){
@@ -22,6 +20,7 @@ class App extends Component {
     this.fetchSearchTopstories = this.fetchSearchTopstories.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
+    this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
 
   setSearchTopstories(result){
@@ -54,6 +53,12 @@ class App extends Component {
     });
   }
 
+  onSearchSubmit(event){
+    const { searchTerm } = this.state
+    this.fetchSearchTopstories(searchTerm)
+    event.preventDefault()
+  }
+
   render() {
     const { searchTerm, result } = this.state;
 
@@ -63,37 +68,38 @@ class App extends Component {
           <Search
             value = {searchTerm}
             onChange = {this.onSearchChange}
+            onSubmit = {this.onSearchSubmit}
           >
             Search!
           </Search>
         </div>
-        {result
-          ? <Table
-            list = {result.hits}
-            pattern = {searchTerm}
-            onDismiss = {this.onDismiss}
-            />
-          : null
+        {result &&
+         <Table
+          list = {result.hits}
+          onDismiss = {this.onDismiss}
+          />
         }
       </div>
     );
   }
 }
 
-const Search = ({value, onChange, children}) =>
-    <form>
-      {children}
+const Search = ({value, onChange, onSubmit, children}) =>
+    <form onSubmit={onSubmit}>
       <input
         type="text"
         value={value}
         onChange={onChange}
       />
+      <button type="submit">
+        {children}
+      </button>
     </form>
 
 
-const Table = ({list, pattern, onDismiss}) =>
+const Table = ({list, onDismiss}) =>
     <div className="table">
-      {list.filter(isSearched(pattern)).map( item =>
+      {list.map( item =>
             <div key={item.objectID} className="table-row">
               <span style={{ width: '40%'}}>
                 <a href={item.url}> {item.title}</a>
