@@ -3,9 +3,12 @@ import logo from './logo.svg';
 import './App.css';
 
 const default_query = 'redux';
+const default_hpp = '100';
 const path_base = 'https://hn.algolia.com/api/v1';
 const path_search = '/search';
 const param_search = 'query=';
+const param_page = 'page=';
+const param_hpp = 'hitsPerPage='
 
 
 class App extends Component {
@@ -24,11 +27,23 @@ class App extends Component {
   }
 
   setSearchTopstories(result){
-    this.setState({ result })
+    const { hits, page } = result;
+    const oldHits = page !== 0
+      ? this.state.result.hits
+      : [];
+
+    const updatedHits = [
+      ...oldHits,
+      ...hits
+    ];
+
+    this.setState({
+      result: { hits: updatedHits, page }
+    })
   }
 
-  fetchSearchTopstories(searchTerm){
-    fetch(`${path_base}${path_search}?${param_search}${searchTerm}`)
+  fetchSearchTopstories(searchTerm, page = 0){
+    fetch(`${path_base}${path_search}?${param_search}${searchTerm}&${param_page}${page}&${param_hpp}${default_hpp}`)
       .then(response => response.json())
       .then(result => this.setSearchTopstories(result))
       .catch(e => e);
@@ -61,7 +76,7 @@ class App extends Component {
 
   render() {
     const { searchTerm, result } = this.state;
-
+    const page = (result && result.page) || 0;
     return (
       <div className="page">
         <div className="interactions">
@@ -79,6 +94,11 @@ class App extends Component {
           onDismiss = {this.onDismiss}
           />
         }
+        <div className="interactions">
+          <Button onClick={() => this.fetchSearchTopstories(searchTerm, page + 1)}>
+            More
+          </Button>
+        </div>
       </div>
     );
   }
