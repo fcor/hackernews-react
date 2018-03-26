@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 import logo from './logo.svg';
 import './App.css';
 
@@ -54,9 +55,8 @@ class App extends Component {
   }
 
   fetchSearchTopstories(searchTerm, page = 0){
-    fetch(`${path_base}${path_search}?${param_search}${searchTerm}&${param_page}${page}&${param_hpp}${default_hpp}`)
-      .then(response => response.json())
-      .then(result => this.setSearchTopstories(result))
+    axios(`${path_base}${path_search}?${param_search}${searchTerm}&${param_page}${page}&${param_hpp}${default_hpp}`)
+      .then(result => this.setSearchTopstories(result.data))
       .catch(e => this.setState({ error: e }));
   }
 
