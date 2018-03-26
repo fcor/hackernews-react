@@ -13,6 +13,9 @@ const param_hpp = 'hitsPerPage='
 
 
 class App extends Component {
+
+  _isMounted = false;
+
   constructor(props){
     super(props);
 
@@ -56,14 +59,19 @@ class App extends Component {
 
   fetchSearchTopstories(searchTerm, page = 0){
     axios(`${path_base}${path_search}?${param_search}${searchTerm}&${param_page}${page}&${param_hpp}${default_hpp}`)
-      .then(result => this.setSearchTopstories(result.data))
-      .catch(e => this.setState({ error: e }));
+      .then(result => this._isMounted && this.setSearchTopstories(result.data))
+      .catch(e => this._isMounted && this.setState({ error: e }));
   }
 
   componentDidMount(){
+    this._isMounted = true;
     const { searchTerm } = this.state;
     this.setState({ searchKey: searchTerm });
     this.fetchSearchTopstories(searchTerm);
+  }
+
+  componentWillUnmount(){
+    this._isMounted = false;
   }
 
   onDismiss(id){
