@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import logo from './logo.svg';
 import './App.css';
+import BouncingLoader from './Loading'
 
 const default_query = 'redux';
 const default_hpp = '100';
@@ -24,6 +25,7 @@ class App extends Component {
       searchKey: '',
       searchTerm: default_query,
       error: null,
+      isLoading: false
     };
     this.setSearchTopstories = this.setSearchTopstories.bind(this);
     this.fetchSearchTopstories = this.fetchSearchTopstories.bind(this);
@@ -53,11 +55,13 @@ class App extends Component {
       results:{
         ...results,
         [searchKey] : { hits: updatedHits, page }
-      }
+      },
+      isLoading: false
     })
   }
 
   fetchSearchTopstories(searchTerm, page = 0){
+    this.setState({ isLoading: true })
     axios(`${path_base}${path_search}?${param_search}${searchTerm}&${param_page}${page}&${param_hpp}${default_hpp}`)
       .then(result => this._isMounted && this.setSearchTopstories(result.data))
       .catch(e => this._isMounted && this.setState({ error: e }));
@@ -104,7 +108,7 @@ class App extends Component {
   }
 
   render() {
-    const { searchTerm, results, searchKey, error } = this.state;
+    const { searchTerm, results, searchKey, error, isLoading } = this.state;
     const page = results && results[searchKey] && results[searchKey].page || 0;
     const list = results && results[searchKey] && results[searchKey].hits || [];
 
@@ -129,9 +133,12 @@ class App extends Component {
            />
        }
         <div className="interactions">
-          <Button onClick={() => this.fetchSearchTopstories(searchKey, page + 1)}>
-            More
-          </Button>
+          {isLoading
+            ? <BouncingLoader />
+            : <Button onClick={() => this.fetchSearchTopstories(searchKey, page + 1)}>
+                More
+              </Button>
+          }
         </div>
       </div>
     );
